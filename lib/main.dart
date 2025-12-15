@@ -4,11 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
 import 'core/di/service_locator.dart';
 import 'core/constants/app_colors.dart';
-import 'features/stack_tower/view/main_menu_screen.dart';
+
 import 'features/stack_tower/services/settings_service.dart';
 import 'features/stack_tower/services/storage_service.dart';
 import 'features/stack_tower/services/effects_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'features/splash/provider/splash_provider.dart';
+import 'features/splash/view/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +40,9 @@ void main() async {
         ChangeNotifierProvider.value(value: sl<SideMenuProvider>()),
         // Core services for StackTower (ViewModel will be created at screen level due to TickerProvider requirement)
         Provider.value(value: storageService),
-        Provider.value(value: effectsService),
+        ChangeNotifierProvider.value(value: effectsService),
+        // Splash Provider
+        ChangeNotifierProvider(create: (_) => SplashProvider()),
       ],
       child: StackTowerApp(settingsService: settingsService),
     ),
@@ -64,9 +68,7 @@ class StackTowerApp extends StatelessWidget {
               title: 'Stack Tower Pro',
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                brightness: colors.isDark
-                    ? Brightness.dark
-                    : Brightness.light,
+                brightness: colors.isDark ? Brightness.dark : Brightness.light,
                 colorScheme: colors.isDark
                     ? ColorScheme.dark(
                         primary: colors.primary,
@@ -82,7 +84,7 @@ class StackTowerApp extends StatelessWidget {
                 useMaterial3: true,
                 fontFamily: 'Roboto',
               ),
-              home: const MainMenuScreen(),
+              home: const ArcadeSplashScreen(),
             );
           },
         );

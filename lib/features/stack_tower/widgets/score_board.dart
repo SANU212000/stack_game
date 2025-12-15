@@ -14,7 +14,7 @@ class ScoreBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.watch<AppColorProvider>();
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

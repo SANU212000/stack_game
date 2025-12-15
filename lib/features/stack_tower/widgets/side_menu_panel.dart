@@ -6,7 +6,6 @@ import 'package:slack_game/features/stack_tower/provider/stack_tower_provider.da
 import '../../../core/constants/app_colors.dart';
 
 class SideMenuPanel extends StatelessWidget {
-
   final VoidCallback onRestart;
   final VoidCallback onSettings;
   final VoidCallback onExit;
@@ -14,7 +13,7 @@ class SideMenuPanel extends StatelessWidget {
 
   const SideMenuPanel({
     super.key,
- 
+
     required this.onRestart,
     required this.onSettings,
     required this.onExit,
@@ -31,9 +30,13 @@ class SideMenuPanel extends StatelessWidget {
         color: colors.surface,
         border: Border(
           right: BorderSide(
-            color: colors.textSecondary.withAlpha(30),
+            color: colors.textSecondary.withAlpha(10),
             width: 1.w,
           ),
+        ),
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(20.r),
+          bottomRight: Radius.circular(20.r),
         ),
         boxShadow: [
           BoxShadow(
