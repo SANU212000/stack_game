@@ -6,6 +6,8 @@ import 'core/di/service_locator.dart';
 import 'core/constants/app_colors.dart';
 import 'features/stack_tower/view/main_menu_screen.dart';
 import 'features/stack_tower/services/settings_service.dart';
+import 'features/stack_tower/services/storage_service.dart';
+import 'features/stack_tower/services/effects_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
@@ -23,8 +25,10 @@ void main() async {
   // Initialize dependency injection (includes SettingsService)
   await setupServiceLocator();
 
-  // Get settings service from service locator
+  // Get services from service locator
   final settingsService = sl<SettingsService>();
+  final storageService = sl<StorageService>();
+  final effectsService = sl<EffectsService>();
 
   runApp(
     MultiProvider(
@@ -32,6 +36,9 @@ void main() async {
         ChangeNotifierProvider.value(value: settingsService),
         ChangeNotifierProvider.value(value: sl<AppColorProvider>()),
         ChangeNotifierProvider.value(value: sl<SideMenuProvider>()),
+        // Core services for StackTower (ViewModel will be created at screen level due to TickerProvider requirement)
+        Provider.value(value: storageService),
+        Provider.value(value: effectsService),
       ],
       child: StackTowerApp(settingsService: settingsService),
     ),

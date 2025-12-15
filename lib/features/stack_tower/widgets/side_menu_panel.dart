@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
-import 'package:slack_game/features/stack_tower/viewmodel/stack_tower_viewmodel.dart';
+import 'package:slack_game/features/stack_tower/provider/stack_tower_provider.dart';
 import '../../../core/constants/app_colors.dart';
 
 class SideMenuPanel extends StatelessWidget {
- 
+
   final VoidCallback onRestart;
   final VoidCallback onSettings;
   final VoidCallback onExit;
-  final StackTowerViewModel viewModel;
+  final StackTowerProvider viewModel;
 
   const SideMenuPanel({
     super.key,

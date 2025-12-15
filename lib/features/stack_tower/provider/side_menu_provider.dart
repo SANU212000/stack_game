@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:slack_game/features/stack_tower/viewmodel/stack_tower_viewmodel.dart';
+import 'package:slack_game/features/stack_tower/provider/stack_tower_provider.dart';
 
 class SideMenuProvider extends ChangeNotifier {
   bool _isMenuOpen = false;
@@ -12,7 +12,7 @@ class SideMenuProvider extends ChangeNotifier {
     // Don't notify here to avoid build errors during initState
   }
 
-  void toggleMenu(StackTowerViewModel viewModel) {
+  void toggleMenu(StackTowerProvider viewModel) {
     if (_menuController == null) return;
 
     _isMenuOpen = !_isMenuOpen;
@@ -27,7 +27,7 @@ class SideMenuProvider extends ChangeNotifier {
     }
   }
 
-  void closeMenu(StackTowerViewModel viewModel) {
+  void closeMenu(StackTowerProvider viewModel) {
     if (!_isMenuOpen || _menuController == null) return;
 
     _isMenuOpen = false;

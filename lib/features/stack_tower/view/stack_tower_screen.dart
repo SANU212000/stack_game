@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
-import '../../../core/di/service_locator.dart';
 import '../../../core/constants/app_colors.dart';
-import '../viewmodel/stack_tower_viewmodel.dart';
+import '../provider/stack_tower_provider.dart';
+import '../provider/animation_provider.dart';
 import '../widgets/score_board.dart';
 import '../widgets/level_badge.dart';
 import '../widgets/game_over_card.dart';
@@ -22,6 +22,7 @@ import 'settings_screen.dart';
 /// - Animated background
 /// - Polished UI transitions
 /// - Side Menu with Split Screen
+/// - MVVM Architecture with Provider
 class StackTowerScreen extends StatefulWidget {
   const StackTowerScreen({super.key});
 
@@ -31,360 +32,318 @@ class StackTowerScreen extends StatefulWidget {
 
 class _StackTowerScreenState extends State<StackTowerScreen>
     with TickerProviderStateMixin {
-  late AnimationController _bgAnimationController;
-  late Animation<double> _bgAnimation;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  // Menu State
-  late AnimationController _menuController;
-  late Animation<double> _menuAnimation;
+  late AnimationProvider _animationProvider;
+  late StackTowerProvider _stackTowerProvider;
 
   @override
   void initState() {
     super.initState();
 
-    // Background gradient animation
-    _bgAnimationController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat(reverse: true);
+    // Create animation provider with TickerProvider
+    _animationProvider = AnimationProvider(this);
 
-    _bgAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _bgAnimationController, curve: Curves.easeInOut),
+    // Create stack tower provider with dependencies
+    _stackTowerProvider = StackTowerProvider(
+      storageService: context.read(),
+      effectsService: context.read(),
+      settingsService: context.read(),
+      appColorProvider: context.read(),
+      animationProvider: _animationProvider,
     );
 
-    // Pulse animation for start button
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    // Menu Animation
-    _menuController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _menuAnimation = CurvedAnimation(
-      parent: _menuController,
-      curve: Curves.easeInOutQuart,
-    );
-
-    // Initialize provider with controller
-    // Use WidgetsBinding to avoid 'dependOnInheritedWidgetOfExactType' error in initState
+    // Initialize side menu provider with menu controller
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<SideMenuProvider>().init(_menuController);
+        context.read<SideMenuProvider>().init(_animationProvider.menuController);
       }
     });
   }
 
   @override
   void dispose() {
-    _bgAnimationController.dispose();
-    _pulseController.dispose();
-    _menuController.dispose();
+    _animationProvider.dispose();
+    _stackTowerProvider.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.watch<AppColorProvider>();
-    final sideMenuProvider = context.read<SideMenuProvider>();
-    return ChangeNotifierProvider(
-      create: (_) => sl<StackTowerViewModel>(),
+    final sideMenuProvider = context.watch<SideMenuProvider>();
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _animationProvider),
+        ChangeNotifierProvider.value(value: _stackTowerProvider),
+      ],
       child: Scaffold(
-        body: AnimatedBuilder(
-          animation: _bgAnimation,
-          builder: (context, child) {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color.lerp(
-                      colors.backgroundMedium,
-                      colors.backgroundLight,
-                      _bgAnimation.value,
-                    )!,
-                    Color.lerp(
-                      colors.backgroundAlt,
-                      colors.backgroundMedium,
-                      _bgAnimation.value,
-                    )!,
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                child: Consumer<StackTowerViewModel>(
-                  builder: (context, viewModel, child) {
-                    final gameState = viewModel.gameState;
-                    final placedBlocks = viewModel.placedBlocks;
-                    final currentBlock = viewModel.currentBlock;
-                    final effectsService = viewModel.effectsService;
-                    final isPaused = gameState.status == 'paused';
-
-                    return Row(
-                      children: [
-                        // Side Menu Panel (1/3 width when open)
-                        SizeTransition(
-                          sizeFactor: _menuAnimation,
-                          axis: Axis.horizontal,
-                          axisAlignment: -1.0,
-                          child: SizedBox(
-                            width: 0.33.sw,
-                            child: SideMenuPanel(
-                              viewModel: viewModel,
-                              onRestart: () {
-                                sideMenuProvider.closeMenu(viewModel);
-                                viewModel.restartGame();
-                              },
-                              onSettings: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SettingsScreen(),
-                                  ),
-                                );
-                              },
-                              onExit: () => Navigator.pop(context),
-                            ),
-                          ),
-                        ),
-
-                        // Game Area (Full width or 2/3 width)
-                        Expanded(
-                          child: ListenableBuilder(
-                            listenable: effectsService,
-                            builder: (context, child) {
-                              // Apply screen shake
-                              return Transform.translate(
-                                offset: Offset(
-                                  effectsService.shakeOffsetX,
-                                  effectsService.shakeOffsetY,
-                                ),
-                                child: Stack(
-                                  children: [
-                                    // Animated background particles (decorative)
-                                    if (!gameState.isInitial)
-                                      _buildBackgroundDecorations(),
-
-                                    // Game Content
-                                    SafeArea(
-                                      child: Column(
-                                        children: [
-                                          // Top Bar: Menu, Restart & Level
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 20.w,
-                                              vertical: 10.h,
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                // Left side controls
-                                                if (gameState.isPlaying ||
-                                                    gameState.isGameOver ||
-                                                    isPaused)
-                                                  Row(
-                                                    children: [
-                                                      // Menu Button
-                                                      if (!sideMenuProvider
-                                                          .isMenuOpen)
-                                                        _buildMenuButton(
-                                                          colors,
-                                                          viewModel,
-                                                        ),
-
-                                                      // RestartButton(
-                                                      //   onPressed: () =>
-                                                      //       viewModel
-                                                      //           .restartGame(),
-                                                      //   isEnabled: !viewModel
-                                                      //       .animationModel
-                                                      //       .isAnimating,
-                                                      // ),
-                                                    ],
-                                                  ),
-
-                                                if (gameState.isPlaying ||
-                                                    gameState.isGameOver ||
-                                                    isPaused)
-                                                  LevelBadge(
-                                                    level: gameState.level,
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-
-                                          // Main game area (Expanded)
-                                          Expanded(
-                                            child: Center(
-                                              child: gameState.isInitial
-                                                  ? _buildStartScreen(context)
-                                                  : Stack(
-                                                      children: [
-                                                        TowerArea(
-                                                          placedBlocks:
-                                                              placedBlocks,
-                                                          currentBlock:
-                                                              currentBlock,
-                                                          particles:
-                                                              effectsService
-                                                                  .particles,
-                                                          level:
-                                                              gameState.level,
-                                                          combo:
-                                                              gameState.combo,
-                                                          onTap: () {
-                                                            if (!isPaused) {
-                                                              viewModel.onTap();
-                                                            }
-                                                          },
-                                                        ),
-
-                                                        // Pause Overlay
-                                                        if (isPaused)
-                                                          Center(
-                                                            child: Container(
-                                                              padding:
-                                                                  EdgeInsets.symmetric(
-                                                                    horizontal:
-                                                                        24.w,
-                                                                    vertical:
-                                                                        12.h,
-                                                                  ),
-                                                              decoration: BoxDecoration(
-                                                                color: Colors
-                                                                    .black
-                                                                    .withAlpha(
-                                                                      150,
-                                                                    ),
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      20.r,
-                                                                    ),
-                                                                border: Border.all(
-                                                                  color: colors
-                                                                      .accent
-                                                                      .withAlpha(
-                                                                        100,
-                                                                      ),
-                                                                  width: 2.w,
-                                                                ),
-                                                              ),
-                                                              child: Row(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                children: [
-                                                                  Icon(
-                                                                    Icons.pause,
-                                                                    color: colors
-                                                                        .accent,
-                                                                    size: 32.sp,
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 12.w,
-                                                                  ),
-                                                                  Text(
-                                                                    'PAUSED',
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          24.sp,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color: Colors
-                                                                          .white,
-                                                                      letterSpacing:
-                                                                          4.w,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ),
-
-                                          // Bottom: Score Board
-                                          if (gameState.isPlaying ||
-                                              gameState.isGameOver ||
-                                              isPaused)
-                                            ScoreBoard(
-                                              score: gameState.score,
-                                              bestScore: gameState.bestScore,
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Combo display (Overlay)
-                                    if ((gameState.isPlaying ||
-                                            gameState.isGameOver) &&
-                                        !isPaused)
-                                      ComboDisplay(
-                                        combo: gameState.combo,
-                                        showPerfect:
-                                            effectsService.showPerfectText,
-                                        perfectOpacity:
-                                            effectsService.perfectTextOpacity,
-                                        perfectScale:
-                                            effectsService.perfectTextScale,
-                                      ),
-
-                                    // Game over modal (Overlay)
-                                    if (gameState.isGameOver)
-                                      Container(
-                                        color: colors.overlayDark,
-                                        child: GameOverCard(
-                                          score: gameState.score,
-                                          bestScore: gameState.bestScore,
-                                          maxCombo: gameState.maxCombo,
-                                          perfectLandings:
-                                              gameState.perfectLandings,
-                                          level: gameState.level,
-                                          onRestart: () =>
-                                              viewModel.restartGame(),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            );
-          },
+        body: _GameContent(
+          colors: colors,
+          sideMenuProvider: sideMenuProvider,
+          animationProvider: _animationProvider,
         ),
       ),
     );
   }
+}
 
-  Widget _buildMenuButton(
+/// Extracted game content widget to use providers
+class _GameContent extends StatelessWidget {
+  final AppColorProvider colors;
+  final SideMenuProvider sideMenuProvider;
+  final AnimationProvider animationProvider;
+
+  const _GameContent({
+    required this.colors,
+    required this.sideMenuProvider,
+    required this.animationProvider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final stackTowerProvider = context.watch<StackTowerProvider>();
+    final gameState = stackTowerProvider.gameState;
+    final placedBlocks = stackTowerProvider.placedBlocks;
+    final currentBlock = stackTowerProvider.currentBlock;
+    final effectsService = stackTowerProvider.effectsService;
+    final isPaused = gameState.status == 'paused';
+
+    return AnimatedBuilder(
+      animation: animationProvider.bgAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color.lerp(
+                  colors.backgroundMedium,
+                  colors.backgroundLight,
+                  animationProvider.bgAnimation.value,
+                )!,
+                Color.lerp(
+                  colors.backgroundAlt,
+                  colors.backgroundMedium,
+                  animationProvider.bgAnimation.value,
+                )!,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Row(
+              children: [
+                // Side Menu Panel (1/3 width when open)
+                SizeTransition(
+                  sizeFactor: animationProvider.menuAnimation,
+                  axis: Axis.horizontal,
+                  axisAlignment: -1.0,
+                  child: SizedBox(
+                    width: 0.33.sw,
+                    child: SideMenuPanel(
+                      viewModel: stackTowerProvider,
+                      onRestart: () {
+                        sideMenuProvider.closeMenu(stackTowerProvider);
+                        stackTowerProvider.restartGame();
+                      },
+                      onSettings: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
+                        );
+                      },
+                      onExit: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
+
+                // Game Area (Full width or 2/3 width)
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: effectsService,
+                    builder: (context, child) {
+                      // Apply screen shake
+                      return Transform.translate(
+                        offset: Offset(
+                          effectsService.shakeOffsetX,
+                          effectsService.shakeOffsetY,
+                        ),
+                        child: Stack(
+                          children: [
+                            // Animated background particles (decorative)
+                            if (!gameState.isInitial)
+                              _buildBackgroundDecorations(context),
+
+                            // Game Content
+                            SafeArea(
+                              child: Column(
+                                children: [
+                                  // Top Bar: Menu, Restart & Level
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20.w,
+                                      vertical: 10.h,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Left side controls
+                                        if (gameState.isPlaying ||
+                                            gameState.isGameOver ||
+                                            isPaused)
+                                          Row(
+                                            children: [
+                                              // Menu Button
+                                              if (!sideMenuProvider.isMenuOpen)
+                                                _buildMenuButton(
+                                                  context,
+                                                  colors,
+                                                  stackTowerProvider,
+                                                ),
+
+                                              // RestartButton(
+                                              //   onPressed: () =>
+                                              //       stackTowerProvider
+                                              //           .restartGame(),
+                                              //   isEnabled: !stackTowerProvider
+                                              //       .animationModel
+                                              //       .isAnimating,
+                                              // ),
+                                            ],
+                                          ),
+
+                                        if (gameState.isPlaying ||
+                                            gameState.isGameOver ||
+                                            isPaused)
+                                          LevelBadge(
+                                            level: gameState.level,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Main game area (Expanded)
+                                  Expanded(
+                                    child: Center(
+                                      child: gameState.isInitial
+                                          ? _buildStartScreen(context)
+                                          : Stack(
+                                              children: [
+                                                TowerArea(
+                                                  placedBlocks: placedBlocks,
+                                                  currentBlock: currentBlock,
+                                                  particles: effectsService.particles,
+                                                  level: gameState.level,
+                                                  combo: gameState.combo,
+                                                  onTap: () {
+                                                    if (!isPaused) {
+                                                      stackTowerProvider.onTap();
+                                                    }
+                                                  },
+                                                ),
+
+                                                // Pause Overlay
+                                                if (isPaused)
+                                                  Center(
+                                                    child: Container(
+                                                      padding: EdgeInsets.symmetric(
+                                                        horizontal: 24.w,
+                                                        vertical: 12.h,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black.withAlpha(150),
+                                                        borderRadius: BorderRadius.circular(20.r),
+                                                        border: Border.all(
+                                                          color: colors.accent.withAlpha(100),
+                                                          width: 2.w,
+                                                        ),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.pause,
+                                                            color: colors.accent,
+                                                            size: 32.sp,
+                                                          ),
+                                                          SizedBox(width: 12.w),
+                                                          Text(
+                                                            'PAUSED',
+                                                            style: TextStyle(
+                                                              fontSize: 24.sp,
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.white,
+                                                              letterSpacing: 4.w,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+
+                                  // Bottom: Score Board
+                                  if (gameState.isPlaying ||
+                                      gameState.isGameOver ||
+                                      isPaused)
+                                    ScoreBoard(
+                                      score: gameState.score,
+                                      bestScore: gameState.bestScore,
+                                    ),
+                                ],
+                              ),
+                            ),
+
+                            // Combo display (Overlay)
+                            if ((gameState.isPlaying || gameState.isGameOver) && !isPaused)
+                              ComboDisplay(
+                                combo: gameState.combo,
+                                showPerfect: effectsService.showPerfectText,
+                                perfectOpacity: effectsService.perfectTextOpacity,
+                                perfectScale: effectsService.perfectTextScale,
+                              ),
+
+                            // Game over modal (Overlay)
+                            if (gameState.isGameOver)
+                              Container(
+                                color: colors.overlayDark,
+                                child: GameOverCard(
+                                  score: gameState.score,
+                                  bestScore: gameState.bestScore,
+                                  maxCombo: gameState.maxCombo,
+                                  perfectLandings: gameState.perfectLandings,
+                                  level: gameState.level,
+                                  onRestart: () => stackTowerProvider.restartGame(),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  static Widget _buildMenuButton(
+    BuildContext context,
     AppColorProvider colors,
-    StackTowerViewModel viewModel,
+    StackTowerProvider stackTowerProvider,
   ) {
     final sideMenuProvider = context.read<SideMenuProvider>();
     return GestureDetector(
-      onTap: () => sideMenuProvider.toggleMenu(viewModel),
+      onTap: () => sideMenuProvider.toggleMenu(stackTowerProvider),
       child: Container(
         width: 44.w,
         height: 44.w,
@@ -412,8 +371,11 @@ class _StackTowerScreenState extends State<StackTowerScreen>
     );
   }
 
-  Widget _buildStartScreen(BuildContext context) {
+  static Widget _buildStartScreen(BuildContext context) {
     final colors = context.watch<AppColorProvider>();
+    final animationProvider = context.watch<AnimationProvider>();
+    final stackTowerProvider = context.read<StackTowerProvider>();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -450,7 +412,7 @@ class _StackTowerScreenState extends State<StackTowerScreen>
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: context.watch<AppColorProvider>().overlayLight,
+            color: colors.overlayLight,
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Text(
@@ -458,7 +420,7 @@ class _StackTowerScreenState extends State<StackTowerScreen>
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.bold,
-              color: context.watch<AppColorProvider>().textSecondary,
+              color: colors.textSecondary,
               letterSpacing: 2.w,
             ),
           ),
@@ -467,26 +429,23 @@ class _StackTowerScreenState extends State<StackTowerScreen>
 
         // Animated start button
         AnimatedBuilder(
-          animation: _pulseAnimation,
+          animation: animationProvider.pulseAnimation,
           builder: (context, child) {
             return Transform.scale(
-              scale: _pulseAnimation.value,
+              scale: animationProvider.pulseAnimation.value,
               child: GestureDetector(
-                onTap: () => context.read<StackTowerViewModel>().startGame(),
+                onTap: () => stackTowerProvider.startGame(),
                 child: Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 48.w,
                     vertical: 20.h,
                   ),
                   decoration: BoxDecoration(
-                    gradient: context.watch<AppColorProvider>().successGradient,
+                    gradient: colors.successGradient,
                     borderRadius: BorderRadius.circular(30.r),
                     boxShadow: [
                       BoxShadow(
-                        color: context
-                            .watch<AppColorProvider>()
-                            .success
-                            .withAlpha(100),
+                        color: colors.success.withAlpha(100),
                         blurRadius: 20.r,
                         spreadRadius: 2.r,
                       ),
@@ -517,12 +476,13 @@ class _StackTowerScreenState extends State<StackTowerScreen>
     );
   }
 
-  Widget _buildBackgroundDecorations() {
+  static Widget _buildBackgroundDecorations(BuildContext context) {
+    final animationProvider = context.watch<AnimationProvider>();
     return Positioned.fill(
       child: IgnorePointer(
         child: CustomPaint(
           painter: _BackgroundDecoPainter(
-            animationValue: _bgAnimation.value,
+            animationValue: animationProvider.bgAnimation.value,
             colors: context.watch<AppColorProvider>(),
           ),
         ),

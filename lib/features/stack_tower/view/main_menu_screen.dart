@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../model/settings_model.dart';
 import '../services/settings_service.dart';
 import '../widgets/animated_stars_background.dart';
+import '../provider/main_menu_animation_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import 'stack_tower_screen.dart';
 import 'settings_screen.dart';
@@ -18,58 +19,17 @@ class MainMenuScreen extends StatefulWidget {
 
 class _MainMenuScreenState extends State<MainMenuScreen>
     with TickerProviderStateMixin {
-  late AnimationController _titleController;
-  late AnimationController _menuController;
-  late Animation<double> _titleAnimation;
-  late List<Animation<double>> _menuAnimations;
+  late MainMenuAnimationProvider _animationProvider;
 
   @override
   void initState() {
     super.initState();
-
-    // Title animation
-    _titleController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-
-    _titleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _titleController,
-        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
-      ),
-    );
-
-    // Menu items staggered animation
-    _menuController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _menuAnimations = List.generate(4, (index) {
-      final startInterval = 0.2 + (index * 0.15);
-      final endInterval = (startInterval + 0.3).clamp(0.0, 1.0);
-      return Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _menuController,
-          curve: Interval(
-            startInterval,
-            endInterval,
-            curve: Curves.easeOutBack,
-          ),
-        ),
-      );
-    });
-
-    // Start animations
-    _titleController.forward();
-    _menuController.forward();
+    _animationProvider = MainMenuAnimationProvider(this);
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _menuController.dispose();
+    _animationProvider.dispose();
     super.dispose();
   }
 
@@ -83,16 +43,15 @@ class _MainMenuScreenState extends State<MainMenuScreen>
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0.0, 0.1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 0.1),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+              ),
               child: child,
             ),
           );
@@ -112,16 +71,15 @@ class _MainMenuScreenState extends State<MainMenuScreen>
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+              ),
               child: child,
             ),
           );
@@ -154,184 +112,215 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   @override
   Widget build(BuildContext context) {
     final colors = context.watch<AppColorProvider>();
-    return Scaffold(
-      body: AnimatedStarsBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-
-              // Animated Title
-              AnimatedBuilder(
-                animation: _titleAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _titleAnimation.value,
-                    child: Opacity(
-                      opacity: _titleAnimation.value.clamp(0.0, 1.0),
-                      child: Column(
-                        children: [
-                          // STACK text
-                          ShaderMask(
-                            shaderCallback: (bounds) =>
-                                colors.primaryGradient.createShader(bounds),
-                            child: Text(
-                              'STACK',
-                              style: TextStyle(
-                                fontSize: 72.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 12.w,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                          // TOWER text
-                          ShaderMask(
-                            shaderCallback: (bounds) =>
-                                colors.accentGradient.createShader(bounds),
-                            child: Text(
-                              'TOWER',
-                              style: TextStyle(
-                                fontSize: 72.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 12.w,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 16.h),
-                          // PRO EDITION badge
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 20.w,
-                              vertical: 6.h,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.purple.withAlpha(100),
-                                  Colors.blue.withAlpha(100),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20.r),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(30),
-                                width: 1.w,
-                              ),
-                            ),
-                            child: Text(
-                              '✨ PRO EDITION ✨',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white.withAlpha(200),
-                                letterSpacing: 2.w,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              const Spacer(flex: 2),
-
-              // Menu Options
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.w),
-                child: Column(
-                  children: [
-                    // Single Player
-                    _buildAnimatedMenuItem(
-                      animation: _menuAnimations[0],
-                      icon: Icons.play_arrow,
-                      label: 'SINGLE PLAYER',
-                      gradient: [colors.menuGreen, colors.menuGreenDark],
-                      onTap: _navigateToGame,
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Multiplayer
-                    _buildAnimatedMenuItem(
-                      animation: _menuAnimations[1],
-                      icon: Icons.people,
-                      label: 'MULTIPLAYER',
-                      gradient: [colors.menuBlue, colors.menuBlueDark],
-                      onTap: () => _showComingSoon('Multiplayer'),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Leaderboard
-                    _buildAnimatedMenuItem(
-                      animation: _menuAnimations[2],
-                      icon: Icons.leaderboard,
-                      label: 'LEADERBOARD',
-                      gradient: [colors.menuOrange, colors.menuOrangeDark],
-                      onTap: () => _showComingSoon('Leaderboard'),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Settings
-                    _buildAnimatedMenuItem(
-                      animation: _menuAnimations[3],
-                      icon: Icons.settings,
-                      label: 'SETTINGS',
-                      gradient: [colors.menuPurple, colors.menuPurpleDark],
-                      onTap: _navigateToSettings,
-                    ),
-                  ],
-                ),
-              ),
-
-              const Spacer(flex: 2),
-
-              // Difficulty indicator
-              Consumer<SettingsService>(
-                builder: (context, settings, child) {
-                  return Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 8.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.overlayLight,
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          settings.difficulty.icon,
-                          color: colors.getDifficultyColor(settings.difficulty),
-                          size: 18.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Difficulty: ${settings.difficulty.displayName}',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: colors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-
-              SizedBox(height: 20.h),
-            ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _animationProvider),
+      ],
+      child: Scaffold(
+        body: AnimatedStarsBackground(
+          child: SafeArea(
+            child: _MenuContent(
+              colors: colors,
+              onNavigateToGame: _navigateToGame,
+              onNavigateToSettings: _navigateToSettings,
+              onShowComingSoon: _showComingSoon,
+            ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildAnimatedMenuItem({
+/// Menu content widget that uses animation provider
+class _MenuContent extends StatelessWidget {
+  final AppColorProvider colors;
+  final VoidCallback onNavigateToGame;
+  final VoidCallback onNavigateToSettings;
+  final Function(String) onShowComingSoon;
+
+  const _MenuContent({
+    required this.colors,
+    required this.onNavigateToGame,
+    required this.onNavigateToSettings,
+    required this.onShowComingSoon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final animationProvider = context.watch<MainMenuAnimationProvider>();
+    return Column(
+      children: [
+        const Spacer(flex: 2),
+
+        // Animated Title
+        AnimatedBuilder(
+          animation: animationProvider.titleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: animationProvider.titleAnimation.value,
+              child: Opacity(
+                opacity: animationProvider.titleAnimation.value.clamp(0.0, 1.0),
+                child: Column(
+                  children: [
+                    // STACK text
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          colors.primaryGradient.createShader(bounds),
+                      child: Text(
+                        'STACK',
+                        style: TextStyle(
+                          fontSize: 72.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 12.w,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                    // TOWER text
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          colors.accentGradient.createShader(bounds),
+                      child: Text(
+                        'TOWER',
+                        style: TextStyle(
+                          fontSize: 72.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 12.w,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    // PRO EDITION badge
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 6.h,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.purple.withAlpha(100),
+                            Colors.blue.withAlpha(100),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(30),
+                          width: 1.w,
+                        ),
+                      ),
+                      child: Text(
+                        '✨ PRO EDITION ✨',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withAlpha(200),
+                          letterSpacing: 2.w,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+
+        const Spacer(flex: 2),
+
+        // Menu Options
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 40.w),
+          child: Column(
+            children: [
+              // Single Player
+              _buildAnimatedMenuItem(
+                animation: animationProvider.menuAnimations[0],
+                icon: Icons.play_arrow,
+                label: 'SINGLE PLAYER',
+                gradient: [colors.menuGreen, colors.menuGreenDark],
+                onTap: onNavigateToGame,
+              ),
+              SizedBox(height: 16.h),
+
+              // Multiplayer
+              _buildAnimatedMenuItem(
+                animation: animationProvider.menuAnimations[1],
+                icon: Icons.people,
+                label: 'MULTIPLAYER',
+                gradient: [colors.menuBlue, colors.menuBlueDark],
+                onTap: () => onShowComingSoon('Multiplayer'),
+              ),
+              SizedBox(height: 16.h),
+
+              // Leaderboard
+              _buildAnimatedMenuItem(
+                animation: animationProvider.menuAnimations[2],
+                icon: Icons.leaderboard,
+                label: 'LEADERBOARD',
+                gradient: [colors.menuOrange, colors.menuOrangeDark],
+                onTap: () => onShowComingSoon('Leaderboard'),
+              ),
+              SizedBox(height: 16.h),
+
+              // Settings
+              _buildAnimatedMenuItem(
+                animation: animationProvider.menuAnimations[3],
+                icon: Icons.settings,
+                label: 'SETTINGS',
+                gradient: [colors.menuPurple, colors.menuPurpleDark],
+                onTap: onNavigateToSettings,
+              ),
+            ],
+          ),
+        ),
+
+        const Spacer(flex: 2),
+
+        // Difficulty indicator
+        Consumer<SettingsService>(
+          builder: (context, settings, child) {
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 8.h,
+              ),
+              decoration: BoxDecoration(
+                color: colors.overlayLight,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    settings.difficulty.icon,
+                    color: colors.getDifficultyColor(settings.difficulty),
+                    size: 18.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Difficulty: ${settings.difficulty.displayName}',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+
+        SizedBox(height: 20.h),
+      ],
+    );
+  }
+
+  static Widget _buildAnimatedMenuItem({
     required Animation<double> animation,
     required IconData icon,
     required String label,
@@ -375,7 +364,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
-                  color: context.watch<AppColorProvider>().textPrimary,
+                  color: Colors.white,
                   letterSpacing: 2.w,
                 ),
               ),

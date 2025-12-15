@@ -3,7 +3,6 @@ import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart
 import '../../features/stack_tower/services/storage_service.dart';
 import '../../features/stack_tower/services/effects_service.dart';
 import '../../features/stack_tower/services/settings_service.dart';
-import '../../features/stack_tower/viewmodel/stack_tower_viewmodel.dart';
 import '../constants/app_colors.dart';
 
 /// Service Locator for Dependency Injection
@@ -31,14 +30,5 @@ Future<void> setupServiceLocator() async {
   // Initialize settings service
   await sl<SettingsService>().loadSettings();
 
-  // ViewModels (factory for new instance per screen)
-  sl.registerFactory<StackTowerViewModel>(
-    () => StackTowerViewModel(
-      storageService: sl<StorageService>(),
-      effectsService: sl<EffectsService>(),
-      settingsService: sl<SettingsService>(),
-      appColorProvider: sl<AppColorProvider>(),
-      // sideMenuProvider: sl<SideMenuProvider>(),
-    ),
-  );
+  // StackTowerProvider is created at screen level due to TickerProvider requirement
 }

@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:slack_game/features/stack_tower/model/block_model.dart';
 import 'package:slack_game/features/stack_tower/model/settings_model.dart';
 import 'package:slack_game/features/stack_tower/services/effects_service.dart';
 import 'package:slack_game/features/stack_tower/services/storage_service.dart';
 import 'package:slack_game/features/stack_tower/services/settings_service.dart';
-import 'package:slack_game/features/stack_tower/viewmodel/stack_tower_viewmodel.dart';
+import 'package:slack_game/features/stack_tower/provider/stack_tower_provider.dart';
+import 'package:slack_game/features/stack_tower/provider/animation_provider.dart';
 import 'package:slack_game/core/constants/app_colors.dart';
 import 'package:slack_game/core/constants/app_constants.dart';
 
@@ -38,27 +40,40 @@ class MockSettingsService extends SettingsService {
   double get speedMultiplier => 1.0;
 }
 
+/// Mock Ticker Provider for testing
+class _MockTickerProvider extends TickerProvider {
+  @override
+  Ticker createTicker(TickerCallback onTick) {
+    return Ticker(onTick, debugLabel: 'mock');
+  }
+}
+
 void main() {
-  late StackTowerViewModel viewModel;
+  late StackTowerProvider viewModel;
   late MockStorageService mockStorage;
   late MockSettingsService mockSettings;
+  late AnimationProvider animationProvider;
 
   setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     mockStorage = MockStorageService();
     mockSettings = MockSettingsService();
-    viewModel = StackTowerViewModel(
+    animationProvider = AnimationProvider(_MockTickerProvider());
+    viewModel = StackTowerProvider(
       storageService: mockStorage,
       effectsService: EffectsService(),
       settingsService: mockSettings,
       appColorProvider: AppColorProvider(),
+      animationProvider: animationProvider,
     );
   });
 
   tearDown(() {
     viewModel.dispose();
+    animationProvider.dispose();
   });
 
-  group('StackTowerViewModel Tests', () {
+  group('StackTowerProvider Tests', () {
     test('initial state should be correct', () {
       expect(viewModel.gameState.status, AppConstants.gameStateInitial);
       expect(viewModel.gameState.score, 0);
@@ -70,7 +85,7 @@ void main() {
       await viewModel.startGame();
 
       expect(viewModel.gameState.status, AppConstants.gameStatePlaying);
-      expect(viewModel.gameState.score, 0);
+      expect(viewModel.gameState.score, 1); // First block is placed
       expect(viewModel.currentBlock, isNotNull);
       expect(viewModel.currentBlock!.index, 0);
     });
