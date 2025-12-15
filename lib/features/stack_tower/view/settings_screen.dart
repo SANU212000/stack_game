@@ -1,0 +1,321 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../model/settings_model.dart';
+import '../services/settings_service.dart';
+import '../../../core/constants/app_colors.dart';
+
+/// Settings screen with difficulty selection and theme toggle
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.watch<AppColorProvider>();
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(gradient: colors.backgroundGradient),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Container(
+                        padding: EdgeInsets.all(8.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16.w),
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          colors.primaryGradient.createShader(bounds),
+                      child: Text(
+                        'SETTINGS',
+                        style: TextStyle(
+                          fontSize: 28.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 4.w,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 24.h),
+
+              // Theme Section
+              Consumer<AppColorProvider>(
+                builder: (context, appColors, child) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: colors.surface.withAlpha(50),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: Colors.white.withAlpha(20)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            appColors.isDark
+                                ? Icons.dark_mode
+                                : Icons.light_mode,
+                            color: colors.accent,
+                            size: 24.sp,
+                          ),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'THEME',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.textSecondary,
+                                    letterSpacing: 2.w,
+                                  ),
+                                ),
+                                Text(
+                                  appColors.isDark ? 'Dark Mode' : 'Light Mode',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: colors.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            activeThumbColor: colors.accent,
+                            value: appColors.isDark,
+                            onChanged: appColors.toggleTheme,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              SizedBox(height: 24.h),
+
+              // Difficulty Section
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Container(
+                  padding: EdgeInsets.all(24.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withAlpha(15),
+                        Colors.white.withAlpha(5),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: Colors.white.withAlpha(20)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.speed, color: colors.accent, size: 24.sp),
+                          SizedBox(width: 12.w),
+                          Text(
+                            'DIFFICULTY',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: colors.textSecondary,
+                              letterSpacing: 2.w,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Controls how fast the blocks move',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: colors.textMuted,
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+
+                      // Difficulty options
+                      Consumer<SettingsService>(
+                        builder: (context, settings, child) {
+                          return Column(
+                            children: Difficulty.values.map((difficulty) {
+                              final isSelected =
+                                  settings.difficulty == difficulty;
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 12.h),
+                                child: _DifficultyOption(
+                                  difficulty: difficulty,
+                                  isSelected: isSelected,
+                                  onTap: () =>
+                                      settings.setDifficulty(difficulty),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Version info
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Text(
+                  'Stack Tower v1.0.0',
+                  style: TextStyle(fontSize: 12.sp, color: colors.textMuted),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DifficultyOption extends StatelessWidget {
+  final Difficulty difficulty;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DifficultyOption({
+    required this.difficulty,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.watch<AppColorProvider>();
+    final difficultyColor = colors.getDifficultyColor(difficulty);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    difficultyColor.withAlpha(80),
+                    difficultyColor.withAlpha(40),
+                  ],
+                )
+              : null,
+          color: isSelected ? null : colors.surface.withAlpha(20),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected
+                ? difficultyColor.withAlpha(150)
+                : colors.textSecondary.withAlpha(50),
+            width: isSelected ? 2.w : 1.w,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: difficultyColor.withAlpha(50),
+                    blurRadius: 15.r,
+                    spreadRadius: 2.r,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              difficulty.icon,
+              color: isSelected
+                  ? difficultyColor
+                  : colors.textSecondary.withAlpha(150),
+              size: 28.sp,
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    difficulty.displayName,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected
+                          ? colors.textPrimary
+                          : colors.textPrimary.withAlpha(180),
+                    ),
+                  ),
+                  Text(
+                    _getDescription(difficulty),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: isSelected
+                          ? colors.textPrimary.withAlpha(180)
+                          : colors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Container(
+                padding: EdgeInsets.all(4.w),
+                decoration: BoxDecoration(
+                  color: difficultyColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check,
+                  color: colors.textPrimary,
+                  size: 16.sp,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getDescription(Difficulty difficulty) {
+    switch (difficulty) {
+      case Difficulty.easy:
+        return 'Slower blocks, perfect for beginners';
+      case Difficulty.medium:
+        return 'Balanced speed for most players';
+      case Difficulty.hard:
+        return 'Fast blocks for experts only!';
+    }
+  }
+}
