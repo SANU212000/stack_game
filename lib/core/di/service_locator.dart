@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
 import '../../features/stack_tower/services/storage_service.dart';
 import '../../features/stack_tower/services/effects_service.dart';
 import '../../features/stack_tower/services/settings_service.dart';
@@ -22,6 +23,7 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<EffectsService>(() => EffectsService());
   sl.registerLazySingleton<SettingsService>(() => SettingsService());
   sl.registerLazySingleton<AppColorProvider>(() => AppColorProvider());
+  sl.registerLazySingleton<SideMenuProvider>(() => SideMenuProvider());
 
   // Initialize storage service
   await sl<StorageService>().init();
@@ -36,6 +38,7 @@ Future<void> setupServiceLocator() async {
       effectsService: sl<EffectsService>(),
       settingsService: sl<SettingsService>(),
       appColorProvider: sl<AppColorProvider>(),
+      // sideMenuProvider: sl<SideMenuProvider>(),
     ),
   );
 }

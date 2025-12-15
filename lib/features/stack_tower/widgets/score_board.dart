@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 
 /// Enhanced widget displaying score and best score
@@ -13,7 +14,7 @@ class ScoreBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.watch<AppColorProvider>();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -58,27 +59,27 @@ class _AnimatedScoreCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.watch<AppColorProvider>();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: gradientColors.first.withAlpha(80),
-            blurRadius: isHighlighted ? 15 : 8,
-            spreadRadius: isHighlighted ? 2 : 0,
+            blurRadius: isHighlighted ? 15.r : 8.r,
+            spreadRadius: isHighlighted ? 2.r : 0,
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: appColors.textSecondary, size: 24),
-          const SizedBox(width: 10),
+          Icon(icon, color: appColors.textSecondary, size: 24.sp),
+          SizedBox(width: 10.w),
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,10 +87,10 @@ class _AnimatedScoreCard extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                   color: appColors.textSecondary,
-                  letterSpacing: 1.5,
+                  letterSpacing: 1.5.w,
                 ),
               ),
               TweenAnimationBuilder<int>(
@@ -99,14 +100,14 @@ class _AnimatedScoreCard extends StatelessWidget {
                   return Text(
                     '$animatedValue',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
                       color: appColors.textPrimary,
                       shadows: [
                         Shadow(
                           color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(1, 1),
+                          blurRadius: 4.r,
+                          offset: Offset(1.w, 1.h),
                         ),
                       ],
                     ),

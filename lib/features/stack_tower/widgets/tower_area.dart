@@ -358,31 +358,34 @@ class TowerArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: AppConstants.towerAreaWidth,
-        height: AppConstants.towerAreaHeight,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(100),
-              blurRadius: 20,
-              spreadRadius: 5,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: CustomPaint(
-            painter: TowerAreaPainter(
-              placedBlocks: placedBlocks,
-              currentBlock: currentBlock,
-              particles: particles,
-              level: level,
-              combo: combo,
-              colors: context.watch<AppColorProvider>(),
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: AppConstants.towerAreaWidth,
+          height: AppConstants.towerAreaHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(100),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CustomPaint(
+              painter: TowerAreaPainter(
+                placedBlocks: placedBlocks,
+                currentBlock: currentBlock,
+                particles: particles,
+                level: level,
+                combo: combo,
+                colors: context.watch<AppColorProvider>(),
+              ),
             ),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 
 /// Animated shooting stars background widget
@@ -64,7 +65,7 @@ class _AnimatedStarsBackgroundState extends State<AnimatedStarsBackground>
         _Star(
           x: _random.nextDouble() * size.width,
           y: _random.nextDouble() * size.height,
-          size: _random.nextDouble() * 2 + 0.5,
+          size: (_random.nextDouble() * 2 + 0.5).w, // Responsive star size
           opacity: _random.nextDouble(),
           twinkleSpeed: _random.nextDouble() * 0.05 + 0.01,
         ),
@@ -94,8 +95,8 @@ class _AnimatedStarsBackgroundState extends State<AnimatedStarsBackground>
         _ShootingStar(
           x: _random.nextDouble() * size.width,
           y: _random.nextDouble() * size.height * 0.3,
-          length: _random.nextDouble() * 80 + 40,
-          speed: _random.nextDouble() * 15 + 10,
+          length: (_random.nextDouble() * 80 + 40).w, // Responsive length
+          speed: (_random.nextDouble() * 15 + 10).w, // Responsive speed
           angle: _random.nextDouble() * 0.5 + 0.3, // Diagonal angle
         ),
       );
@@ -232,7 +233,7 @@ class _StarsPainter extends CustomPainter {
       if (star.opacity > 0.7) {
         final glowPaint = Paint()
           ..color = colors.textPrimary.withAlpha((star.opacity * 50).toInt())
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3.r);
         canvas.drawCircle(Offset(star.x, star.y), star.size * 2, glowPaint);
       }
     }
@@ -257,7 +258,7 @@ class _StarsPainter extends CustomPainter {
 
       final paint = Paint()
         ..shader = gradient.createShader(rect)
-        ..strokeWidth = 2
+        ..strokeWidth = 2.w
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
 
@@ -270,8 +271,8 @@ class _StarsPainter extends CustomPainter {
       // Bright head
       final headPaint = Paint()
         ..color = colors.textPrimary.withAlpha((star.opacity * 255).toInt())
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-      canvas.drawCircle(Offset(star.x, star.y), 3, headPaint);
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 4.r);
+      canvas.drawCircle(Offset(star.x, star.y), 3.r, headPaint);
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../model/block_model.dart';
 import '../../../core/constants/app_colors.dart';
 
@@ -24,15 +25,17 @@ class BlockWidget extends StatelessWidget {
         height: block.height,
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(51),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              blurRadius: 4.r,
+              offset: Offset(0, 2.h),
             ),
           ],
-          border: isCurrent ? Border.all(color: Colors.white, width: 2) : null,
+          border: isCurrent
+              ? Border.all(color: Colors.white, width: 2.w)
+              : null,
         ),
       ),
     );

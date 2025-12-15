@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../model/settings_model.dart';
 import '../services/settings_service.dart';
 import '../widgets/animated_stars_background.dart';
@@ -136,14 +137,16 @@ class _MainMenuScreenState extends State<MainMenuScreen>
         content: Row(
           children: [
             const Icon(Icons.info_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Text('$feature coming soon!'),
+            SizedBox(width: 12.w),
+            Text('$feature coming soon!', style: TextStyle(fontSize: 14.sp)),
           ],
         ),
         backgroundColor: context.read<AppColorProvider>().primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        margin: EdgeInsets.all(16.w),
       ),
     );
   }
@@ -172,13 +175,13 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                           ShaderMask(
                             shaderCallback: (bounds) =>
                                 colors.primaryGradient.createShader(bounds),
-                            child: const Text(
+                            child: Text(
                               'STACK',
                               style: TextStyle(
-                                fontSize: 72,
+                                fontSize: 72.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
-                                letterSpacing: 12,
+                                letterSpacing: 12.w,
                                 height: 1,
                               ),
                             ),
@@ -187,23 +190,23 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                           ShaderMask(
                             shaderCallback: (bounds) =>
                                 colors.accentGradient.createShader(bounds),
-                            child: const Text(
+                            child: Text(
                               'TOWER',
                               style: TextStyle(
-                                fontSize: 72,
+                                fontSize: 72.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
-                                letterSpacing: 12,
+                                letterSpacing: 12.w,
                                 height: 1,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           // PRO EDITION badge
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 6,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 6.h,
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -212,18 +215,19 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                                   Colors.blue.withAlpha(100),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(20.r),
                               border: Border.all(
                                 color: Colors.white.withAlpha(30),
+                                width: 1.w,
                               ),
                             ),
                             child: Text(
                               '✨ PRO EDITION ✨',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white.withAlpha(200),
-                                letterSpacing: 2,
+                                letterSpacing: 2.w,
                               ),
                             ),
                           ),
@@ -238,7 +242,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 
               // Menu Options
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
+                padding: EdgeInsets.symmetric(horizontal: 40.w),
                 child: Column(
                   children: [
                     // Single Player
@@ -249,7 +253,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                       gradient: [colors.menuGreen, colors.menuGreenDark],
                       onTap: _navigateToGame,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Multiplayer
                     _buildAnimatedMenuItem(
@@ -259,7 +263,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                       gradient: [colors.menuBlue, colors.menuBlueDark],
                       onTap: () => _showComingSoon('Multiplayer'),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Leaderboard
                     _buildAnimatedMenuItem(
@@ -269,7 +273,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                       gradient: [colors.menuOrange, colors.menuOrangeDark],
                       onTap: () => _showComingSoon('Leaderboard'),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Settings
                     _buildAnimatedMenuItem(
@@ -289,13 +293,13 @@ class _MainMenuScreenState extends State<MainMenuScreen>
               Consumer<SettingsService>(
                 builder: (context, settings, child) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 8.h,
                     ),
                     decoration: BoxDecoration(
                       color: colors.overlayLight,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -303,13 +307,13 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                         Icon(
                           settings.difficulty.icon,
                           color: colors.getDifficultyColor(settings.difficulty),
-                          size: 18,
+                          size: 18.sp,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           'Difficulty: ${settings.difficulty.displayName}',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: colors.textSecondary,
                           ),
                         ),
@@ -319,7 +323,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                 },
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
             ],
           ),
         ),
@@ -338,7 +342,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
       animation: animation,
       builder: (context, child) {
         return Transform.translate(
-          offset: Offset(0, 50 * (1 - animation.value)),
+          offset: Offset(0, 50.h * (1 - animation.value)),
           child: Opacity(
             opacity: animation.value.clamp(0.0, 1.0),
             child: child,
@@ -349,30 +353,30 @@ class _MainMenuScreenState extends State<MainMenuScreen>
         onTap: onTap,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 18),
+          padding: EdgeInsets.symmetric(vertical: 18.h),
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: gradient),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
                 color: gradient[0].withAlpha(80),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
+                blurRadius: 15.r,
+                offset: Offset(0, 5.h),
               ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 26),
-              const SizedBox(width: 12),
+              Icon(icon, color: Colors.white, size: 26.sp),
+              SizedBox(width: 12.w),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: context.watch<AppColorProvider>().textPrimary,
-                  letterSpacing: 2,
+                  letterSpacing: 2.w,
                 ),
               ),
             ],

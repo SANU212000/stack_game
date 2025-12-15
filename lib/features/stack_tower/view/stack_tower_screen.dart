@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/constants/app_colors.dart';
 import '../viewmodel/stack_tower_viewmodel.dart';
@@ -35,7 +37,6 @@ class _StackTowerScreenState extends State<StackTowerScreen>
   late Animation<double> _pulseAnimation;
 
   // Menu State
-  bool _isMenuOpen = false;
   late AnimationController _menuController;
   late Animation<double> _menuAnimation;
 
@@ -73,6 +74,14 @@ class _StackTowerScreenState extends State<StackTowerScreen>
       parent: _menuController,
       curve: Curves.easeInOutQuart,
     );
+
+    // Initialize provider with controller
+    // Use WidgetsBinding to avoid 'dependOnInheritedWidgetOfExactType' error in initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<SideMenuProvider>().init(_menuController);
+      }
+    });
   }
 
   @override
@@ -83,33 +92,10 @@ class _StackTowerScreenState extends State<StackTowerScreen>
     super.dispose();
   }
 
-  void _toggleMenu(StackTowerViewModel viewModel) {
-    setState(() {
-      _isMenuOpen = !_isMenuOpen;
-    });
-
-    if (_isMenuOpen) {
-      _menuController.forward();
-      viewModel.pauseGame();
-    } else {
-      _menuController.reverse();
-      viewModel.resumeGame();
-    }
-  }
-
-  void _closeMenu(StackTowerViewModel viewModel) {
-    if (!_isMenuOpen) return;
-
-    setState(() {
-      _isMenuOpen = false;
-    });
-    _menuController.reverse();
-    viewModel.resumeGame();
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = context.watch<AppColorProvider>();
+    final sideMenuProvider = context.read<SideMenuProvider>();
     return ChangeNotifierProvider(
       create: (_) => sl<StackTowerViewModel>(),
       child: Scaffold(
@@ -152,11 +138,11 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                           axis: Axis.horizontal,
                           axisAlignment: -1.0,
                           child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.33,
+                            width: 0.33.sw,
                             child: SideMenuPanel(
-                              onResume: () => _closeMenu(viewModel),
+                              viewModel: viewModel,
                               onRestart: () {
-                                _closeMenu(viewModel);
+                                sideMenuProvider.closeMenu(viewModel);
                                 viewModel.restartGame();
                               },
                               onSettings: () {
@@ -196,9 +182,9 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                                         children: [
                                           // Top Bar: Menu, Restart & Level
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 20,
-                                              vertical: 10,
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 20.w,
+                                              vertical: 10.h,
                                             ),
                                             child: Row(
                                               mainAxisAlignment:
@@ -212,11 +198,13 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                                                   Row(
                                                     children: [
                                                       // Menu Button
-                                                      _buildMenuButton(
-                                                        colors,
-                                                        viewModel,
-                                                      ),
-                                                      const SizedBox(width: 8),
+                                                      if (!sideMenuProvider
+                                                          .isMenuOpen)
+                                                        _buildMenuButton(
+                                                          colors,
+                                                          viewModel,
+                                                        ),
+
                                                       // RestartButton(
                                                       //   onPressed: () =>
                                                       //       viewModel
@@ -269,11 +257,11 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                                                           Center(
                                                             child: Container(
                                                               padding:
-                                                                  const EdgeInsets.symmetric(
+                                                                  EdgeInsets.symmetric(
                                                                     horizontal:
-                                                                        24,
+                                                                        24.w,
                                                                     vertical:
-                                                                        12,
+                                                                        12.h,
                                                                   ),
                                                               decoration: BoxDecoration(
                                                                 color: Colors
@@ -283,7 +271,7 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                                                                     ),
                                                                 borderRadius:
                                                                     BorderRadius.circular(
-                                                                      20,
+                                                                      20.r,
                                                                     ),
                                                                 border: Border.all(
                                                                   color: colors
@@ -291,7 +279,7 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                                                                       .withAlpha(
                                                                         100,
                                                                       ),
-                                                                  width: 2,
+                                                                  width: 2.w,
                                                                 ),
                                                               ),
                                                               child: Row(
@@ -303,23 +291,23 @@ class _StackTowerScreenState extends State<StackTowerScreen>
                                                                     Icons.pause,
                                                                     color: colors
                                                                         .accent,
-                                                                    size: 32,
+                                                                    size: 32.sp,
                                                                   ),
-                                                                  const SizedBox(
-                                                                    width: 12,
+                                                                  SizedBox(
+                                                                    width: 12.w,
                                                                   ),
                                                                   Text(
                                                                     'PAUSED',
                                                                     style: TextStyle(
                                                                       fontSize:
-                                                                          24,
+                                                                          24.sp,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold,
                                                                       color: Colors
                                                                           .white,
                                                                       letterSpacing:
-                                                                          4,
+                                                                          4.w,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -394,30 +382,31 @@ class _StackTowerScreenState extends State<StackTowerScreen>
     AppColorProvider colors,
     StackTowerViewModel viewModel,
   ) {
+    final sideMenuProvider = context.read<SideMenuProvider>();
     return GestureDetector(
-      onTap: () => _toggleMenu(viewModel),
+      onTap: () => sideMenuProvider.toggleMenu(viewModel),
       child: Container(
-        width: 44,
-        height: 44,
+        width: 44.w,
+        height: 44.w,
         decoration: BoxDecoration(
           color: colors.surface.withAlpha(200),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: colors.textSecondary.withAlpha(50),
-            width: 1.5,
+            width: 1.5.w,
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(30),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              blurRadius: 4.r,
+              offset: Offset(0, 2.h),
             ),
           ],
         ),
         child: Icon(
-          _isMenuOpen ? Icons.close : Icons.menu_rounded,
+          sideMenuProvider.isMenuOpen ? Icons.close : Icons.menu_rounded,
           color: colors.textPrimary,
-          size: 24,
+          size: 24.sp,
         ),
       ),
     );
@@ -432,13 +421,13 @@ class _StackTowerScreenState extends State<StackTowerScreen>
         ShaderMask(
           shaderCallback: (bounds) =>
               colors.primaryGradient.createShader(bounds),
-          child: const Text(
+          child: Text(
             'STACK',
             style: TextStyle(
-              fontSize: 64,
+              fontSize: 64.sp,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              letterSpacing: 8,
+              letterSpacing: 8.w,
               height: 1,
             ),
           ),
@@ -446,35 +435,35 @@ class _StackTowerScreenState extends State<StackTowerScreen>
         ShaderMask(
           shaderCallback: (bounds) =>
               colors.accentGradient.createShader(bounds),
-          child: const Text(
+          child: Text(
             'TOWER',
             style: TextStyle(
-              fontSize: 64,
+              fontSize: 64.sp,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              letterSpacing: 8,
+              letterSpacing: 8.w,
               height: 1,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: context.watch<AppColorProvider>().overlayLight,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
           ),
           child: Text(
             '✨ PRO EDITION ✨',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.bold,
               color: context.watch<AppColorProvider>().textSecondary,
-              letterSpacing: 2,
+              letterSpacing: 2.w,
             ),
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: 40.h),
 
         // Animated start button
         AnimatedBuilder(
@@ -485,36 +474,36 @@ class _StackTowerScreenState extends State<StackTowerScreen>
               child: GestureDetector(
                 onTap: () => context.read<StackTowerViewModel>().startGame(),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 48,
-                    vertical: 20,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 48.w,
+                    vertical: 20.h,
                   ),
                   decoration: BoxDecoration(
                     gradient: context.watch<AppColorProvider>().successGradient,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(30.r),
                     boxShadow: [
                       BoxShadow(
                         color: context
                             .watch<AppColorProvider>()
                             .success
                             .withAlpha(100),
-                        blurRadius: 20,
-                        spreadRadius: 2,
+                        blurRadius: 20.r,
+                        spreadRadius: 2.r,
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.play_arrow, color: Colors.white, size: 32),
-                      SizedBox(width: 12),
+                      Icon(Icons.play_arrow, color: Colors.white, size: 32.sp),
+                      SizedBox(width: 12.w),
                       Text(
                         'START GAME',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 22.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          letterSpacing: 2,
+                          letterSpacing: 2.w,
                         ),
                       ),
                     ],

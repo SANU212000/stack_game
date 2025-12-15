@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../model/settings_model.dart';
 import '../services/settings_service.dart';
 import '../../../core/constants/app_colors.dart';
@@ -20,16 +21,16 @@ class SettingsScreen extends StatelessWidget {
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 child: Row(
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(20),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: const Icon(
                           Icons.arrow_back,
@@ -37,17 +38,17 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     ShaderMask(
                       shaderCallback: (bounds) =>
                           colors.primaryGradient.createShader(bounds),
-                      child: const Text(
+                      child: Text(
                         'SETTINGS',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          letterSpacing: 4,
+                          letterSpacing: 4.w,
                         ),
                       ),
                     ),
@@ -55,18 +56,18 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Theme Section
               Consumer<AppColorProvider>(
                 builder: (context, appColors, child) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: colors.surface.withAlpha(50),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(color: Colors.white.withAlpha(20)),
                       ),
                       child: Row(
@@ -76,8 +77,9 @@ class SettingsScreen extends StatelessWidget {
                                 ? Icons.dark_mode
                                 : Icons.light_mode,
                             color: colors.accent,
+                            size: 24.sp,
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: 16.w),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,16 +87,16 @@ class SettingsScreen extends StatelessWidget {
                                 Text(
                                   'THEME',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                     color: colors.textSecondary,
-                                    letterSpacing: 2,
+                                    letterSpacing: 2.w,
                                   ),
                                 ),
                                 Text(
                                   appColors.isDark ? 'Dark Mode' : 'Light Mode',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     color: colors.textMuted,
                                   ),
                                 ),
@@ -113,13 +115,13 @@ class SettingsScreen extends StatelessWidget {
                 },
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Difficulty Section
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24.w),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -129,7 +131,7 @@ class SettingsScreen extends StatelessWidget {
                         Colors.white.withAlpha(5),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(color: Colors.white.withAlpha(20)),
                   ),
                   child: Column(
@@ -137,25 +139,28 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.speed, color: colors.accent, size: 24),
-                          const SizedBox(width: 12),
+                          Icon(Icons.speed, color: colors.accent, size: 24.sp),
+                          SizedBox(width: 12.w),
                           Text(
                             'DIFFICULTY',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.bold,
                               color: colors.textSecondary,
-                              letterSpacing: 2,
+                              letterSpacing: 2.w,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         'Controls how fast the blocks move',
-                        style: TextStyle(fontSize: 12, color: colors.textMuted),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: colors.textMuted,
+                        ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // Difficulty options
                       Consumer<SettingsService>(
@@ -165,7 +170,7 @@ class SettingsScreen extends StatelessWidget {
                               final isSelected =
                                   settings.difficulty == difficulty;
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: EdgeInsets.only(bottom: 12.h),
                                 child: _DifficultyOption(
                                   difficulty: difficulty,
                                   isSelected: isSelected,
@@ -186,10 +191,10 @@ class SettingsScreen extends StatelessWidget {
 
               // Version info
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 child: Text(
                   'Stack Tower v1.0.0',
-                  style: TextStyle(fontSize: 12, color: colors.textMuted),
+                  style: TextStyle(fontSize: 12.sp, color: colors.textMuted),
                 ),
               ),
             ],
@@ -220,7 +225,7 @@ class _DifficultyOption extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
@@ -231,19 +236,19 @@ class _DifficultyOption extends StatelessWidget {
                 )
               : null,
           color: isSelected ? null : colors.surface.withAlpha(20),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isSelected
                 ? difficultyColor.withAlpha(150)
                 : colors.textSecondary.withAlpha(50),
-            width: isSelected ? 2 : 1,
+            width: isSelected ? 2.w : 1.w,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: difficultyColor.withAlpha(50),
-                    blurRadius: 15,
-                    spreadRadius: 2,
+                    blurRadius: 15.r,
+                    spreadRadius: 2.r,
                   ),
                 ]
               : null,
@@ -255,9 +260,9 @@ class _DifficultyOption extends StatelessWidget {
               color: isSelected
                   ? difficultyColor
                   : colors.textSecondary.withAlpha(150),
-              size: 28,
+              size: 28.sp,
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,7 +270,7 @@ class _DifficultyOption extends StatelessWidget {
                   Text(
                     difficulty.displayName,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: isSelected
                           ? colors.textPrimary
@@ -275,7 +280,7 @@ class _DifficultyOption extends StatelessWidget {
                   Text(
                     _getDescription(difficulty),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: isSelected
                           ? colors.textPrimary.withAlpha(180)
                           : colors.textMuted,
@@ -286,12 +291,16 @@ class _DifficultyOption extends StatelessWidget {
             ),
             if (isSelected)
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
                   color: difficultyColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check, color: colors.textPrimary, size: 16),
+                child: Icon(
+                  Icons.check,
+                  color: colors.textPrimary,
+                  size: 16.sp,
+                ),
               ),
           ],
         ),

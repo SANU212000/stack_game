@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 
 /// Animated combo display widget
@@ -27,7 +28,7 @@ class ComboDisplay extends StatelessWidget {
         // Combo counter
         if (combo > 1)
           Positioned(
-            top: 120,
+            top: 120.h,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.8, end: 1.0),
               duration: const Duration(milliseconds: 200),
@@ -36,9 +37,9 @@ class ComboDisplay extends StatelessWidget {
                 return Transform.scale(
                   scale: scale,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 12.h,
                     ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -46,15 +47,15 @@ class ComboDisplay extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(30.r),
                       boxShadow: [
                         BoxShadow(
                           color: _getComboColors(
                             combo,
                             colors,
                           ).first.withAlpha(128),
-                          blurRadius: 20,
-                          spreadRadius: 2,
+                          blurRadius: 20.r,
+                          spreadRadius: 2.r,
                         ),
                       ],
                     ),
@@ -63,24 +64,27 @@ class ComboDisplay extends StatelessWidget {
                       children: [
                         // Fire icon for hot streaks
                         if (combo >= 3)
-                          const Padding(
-                            padding: EdgeInsets.only(right: 8),
-                            child: Text('🔥', style: TextStyle(fontSize: 24)),
+                          Padding(
+                            padding: EdgeInsets.only(right: 8.w),
+                            child: Text(
+                              '🔥',
+                              style: TextStyle(fontSize: 24.sp),
+                            ),
                           ),
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               '${combo}x',
-                              style:   TextStyle(
-                                fontSize: 32,
+                              style: TextStyle(
+                                fontSize: 32.sp,
                                 fontWeight: FontWeight.bold,
                                 color: colors.textPrimary,
                                 shadows: [
                                   Shadow(
                                     color: Colors.black45,
-                                    blurRadius: 4,
-                                    offset: Offset(2, 2),
+                                    blurRadius: 4.r,
+                                    offset: Offset(2.w, 2.h),
                                   ),
                                 ],
                               ),
@@ -88,18 +92,18 @@ class ComboDisplay extends StatelessWidget {
                             Text(
                               'COMBO',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontWeight: FontWeight.bold,
                                 color: colors.textSecondary,
-                                letterSpacing: 2,
+                                letterSpacing: 2.w,
                               ),
                             ),
                           ],
                         ),
                         if (combo >= 5)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 8),
-                            child: Text('⭐', style: TextStyle(fontSize: 24)),
+                          Padding(
+                            padding: EdgeInsets.only(left: 8.w),
+                            child: Text('⭐', style: TextStyle(fontSize: 24.sp)),
                           ),
                       ],
                     ),
@@ -112,7 +116,7 @@ class ComboDisplay extends StatelessWidget {
         // Perfect landing text
         if (showPerfect)
           Positioned(
-            top: 200,
+            top: 200.h,
             child: Opacity(
               opacity: perfectOpacity,
               child: Transform.scale(
@@ -123,18 +127,18 @@ class ComboDisplay extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ).createShader(bounds),
-                  child:   Text(
+                  child: Text(
                     '✨ PERFECT! ✨',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 36.sp,
                       fontWeight: FontWeight.bold,
                       color: colors.textPrimary,
-                      letterSpacing: 3,
+                      letterSpacing: 3.w,
                       shadows: [
                         Shadow(
                           color: Colors.black,
-                          blurRadius: 10,
-                          offset: Offset(2, 2),
+                          blurRadius: 10.r,
+                          offset: Offset(2.w, 2.h),
                         ),
                       ],
                     ),

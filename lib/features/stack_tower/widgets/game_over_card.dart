@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 
 /// Enhanced modal card displayed when game ends
@@ -74,28 +75,28 @@ class _GameOverCardState extends State<GameOverCard>
             scale: _scaleAnimation.value,
             child: Center(
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 30),
-                padding: const EdgeInsets.all(24),
+                margin: EdgeInsets.symmetric(horizontal: 30.w),
+                padding: EdgeInsets.all(24.w),
                 decoration: BoxDecoration(
-                  gradient:   LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: appColors.gameOverGradient,
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                   border: Border.all(
                     color: _isNewHighScore
                         ? appColors.statBest.withAlpha(150)
                         : appColors.textPrimary.withAlpha(30),
-                    width: 2,
+                    width: 2.w,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: _isNewHighScore
                           ? appColors.statBest.withAlpha(60)
                           : Colors.black.withAlpha(100),
-                      blurRadius: 30,
-                      spreadRadius: 5,
+                      blurRadius: 30.r,
+                      spreadRadius: 5.r,
                     ),
                   ],
                 ),
@@ -105,46 +106,46 @@ class _GameOverCardState extends State<GameOverCard>
                     // New High Score celebration
                     if (_isNewHighScore) ...[
                       ShaderMask(
-                        shaderCallback: (bounds) =>   LinearGradient(
+                        shaderCallback: (bounds) => LinearGradient(
                           colors: appColors.newHighScoreGradient,
                         ).createShader(bounds),
-                        child:  Text(
+                        child: Text(
                           '🎉 NEW HIGH SCORE! 🎉',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
                             color: appColors.textPrimary,
-                            letterSpacing: 1,
+                            letterSpacing: 1.w,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                     ],
 
                     // Game Over Title
                     Text(
                       'GAME OVER',
                       style: TextStyle(
-                        fontSize: 36,
+                        fontSize: 36.sp,
                         fontWeight: FontWeight.bold,
                         color: appColors.textPrimary,
-                        letterSpacing: 4,
+                        letterSpacing: 4.w,
                         shadows: [
                           Shadow(
                             color: appColors.error.withAlpha(150),
-                            blurRadius: 20,
+                            blurRadius: 20.r,
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Main score display
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32.w,
+                        vertical: 16.h,
                       ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -153,7 +154,7 @@ class _GameOverCardState extends State<GameOverCard>
                             appColors.primary.withAlpha(20),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
                           color: appColors.primary.withAlpha(100),
                         ),
@@ -163,13 +164,13 @@ class _GameOverCardState extends State<GameOverCard>
                           Text(
                             'FINAL SCORE',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.bold,
                               color: appColors.textSecondary,
-                              letterSpacing: 2,
+                              letterSpacing: 2.w,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           TweenAnimationBuilder<int>(
                             tween: IntTween(begin: 0, end: widget.score),
                             duration: const Duration(milliseconds: 800),
@@ -178,7 +179,7 @@ class _GameOverCardState extends State<GameOverCard>
                               return Text(
                                 '$value',
                                 style: TextStyle(
-                                  fontSize: 56,
+                                  fontSize: 56.sp,
                                   fontWeight: FontWeight.bold,
                                   color: appColors.textPrimary,
                                 ),
@@ -189,7 +190,7 @@ class _GameOverCardState extends State<GameOverCard>
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // Stats row
                     Row(
@@ -216,66 +217,66 @@ class _GameOverCardState extends State<GameOverCard>
                       ],
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     // Level reached
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 8.h,
                       ),
                       decoration: BoxDecoration(
                         color: appColors.textPrimary.withAlpha(10),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Text(
                         'Level ${widget.level} Reached ${_getLevelEmoji()}',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: appColors.textSecondary,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Restart Button
                     GestureDetector(
                       onTap: widget.onRestart,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 48,
-                          vertical: 16,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 48.w,
+                          vertical: 16.h,
                         ),
                         decoration: BoxDecoration(
-                          gradient:    LinearGradient(
+                          gradient: LinearGradient(
                             colors: appColors.scoreCurrentGradient,
                           ),
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(30.r),
                           boxShadow: [
                             BoxShadow(
                               color: appColors.primary.withAlpha(100),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
+                              blurRadius: 15.r,
+                              offset: Offset(0, 5.h),
                             ),
                           ],
                         ),
-                        child:   Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.replay,
                               color: appColors.textPrimary,
-                              size: 24,
+                              size: 24.sp,
                             ),
-                            SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Text(
                               'PLAY AGAIN',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 18.sp,
                                 fontWeight: FontWeight.bold,
                                 color: appColors.textPrimary,
-                                letterSpacing: 2,
+                                letterSpacing: 2.w,
                               ),
                             ),
                           ],
@@ -320,19 +321,19 @@ class _StatItem extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
+        Icon(icon, color: color, size: 24.sp),
+        SizedBox(height: 4.h),
         Text(
           value,
-          style:   TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
             color: appColors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: TextStyle(fontSize: 10, color: appColors.textSecondary),
+          style: TextStyle(fontSize: 10.sp, color: appColors.textSecondary),
         ),
       ],
     );

@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
+import 'package:slack_game/features/stack_tower/viewmodel/stack_tower_viewmodel.dart';
 import '../../../core/constants/app_colors.dart';
 
 class SideMenuPanel extends StatelessWidget {
-  final VoidCallback onResume;
+ 
   final VoidCallback onRestart;
   final VoidCallback onSettings;
   final VoidCallback onExit;
+  final StackTowerViewModel viewModel;
 
   const SideMenuPanel({
     super.key,
-    required this.onResume,
+ 
     required this.onRestart,
     required this.onSettings,
     required this.onExit,
+    required this.viewModel,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.watch<AppColorProvider>();
+    final sideMenuProvider = context.read<SideMenuProvider>();
 
     return Container(
       decoration: BoxDecoration(
@@ -26,70 +32,64 @@ class SideMenuPanel extends StatelessWidget {
         border: Border(
           right: BorderSide(
             color: colors.textSecondary.withAlpha(30),
-            width: 1,
+            width: 1.w,
           ),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(50),
-            blurRadius: 10,
-            offset: const Offset(4, 0),
+            blurRadius: 10.r,
+            offset: Offset(4.w, 0),
           ),
         ],
       ),
       child: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Icon(Icons.menu, color: colors.accent, size: 24),
-                  const SizedBox(width: 12),
-                  Text(
-                    'MENU',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
-                      letterSpacing: 2,
-                    ),
+                  GestureDetector(
+                    onTap: () => sideMenuProvider.toggleMenu(viewModel),
+                    child: Icon(Icons.menu, color: colors.accent, size: 24.sp),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             // Menu Items
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
                 children: [
                   _MenuButton(
                     icon: Icons.play_arrow_rounded,
                     label: 'RESUME',
-                    onTap: onResume,
+                    onTap: () => sideMenuProvider.closeMenu(viewModel),
                     color: colors.success,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   _MenuButton(
                     icon: Icons.refresh_rounded,
                     label: 'RESTART',
                     onTap: onRestart,
                     color: colors.accent,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   _MenuButton(
                     icon: Icons.settings_rounded,
                     label: 'SETTINGS',
                     onTap: onSettings,
                     color: colors.textSecondary,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   const Divider(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   _MenuButton(
                     icon: Icons.close_rounded,
                     label: 'EXIT',
@@ -127,26 +127,26 @@ class _MenuButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
           decoration: BoxDecoration(
             border: Border.all(color: color.withAlpha(50)),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             color: color.withAlpha(10),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 8),
+              Icon(icon, color: color, size: 28.sp),
+              SizedBox(height: 8.h),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                   color: color,
-                  letterSpacing: 1,
+                  letterSpacing: 1.w,
                 ),
                 textAlign: TextAlign.center,
               ),

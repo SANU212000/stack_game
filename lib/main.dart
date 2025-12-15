@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
 import 'core/di/service_locator.dart';
 import 'core/constants/app_colors.dart';
 import 'features/stack_tower/view/main_menu_screen.dart';
 import 'features/stack_tower/services/settings_service.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +26,16 @@ void main() async {
   // Get settings service from service locator
   final settingsService = sl<SettingsService>();
 
-  runApp(StackTowerApp(settingsService: settingsService));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: settingsService),
+        ChangeNotifierProvider.value(value: sl<AppColorProvider>()),
+        ChangeNotifierProvider.value(value: sl<SideMenuProvider>()),
+      ],
+      child: StackTowerApp(settingsService: settingsService),
+    ),
+  );
 }
 
 /// Root application widget
@@ -35,40 +46,40 @@ class StackTowerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get AppColorProvider from service locator
-    final colorProvider = sl<AppColorProvider>();
-
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: settingsService),
-        ChangeNotifierProvider.value(value: colorProvider),
-      ],
-      child: Consumer<AppColorProvider>(
-        builder: (context, colors, _) {
-          return MaterialApp(
-            title: 'Stack Tower Pro',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              brightness: colors.isDark ? Brightness.dark : Brightness.light,
-              colorScheme: colors.isDark
-                  ? ColorScheme.dark(
-                      primary: colors.primary,
-                      secondary: colors.success,
-                      surface: colors.backgroundMedium,
-                    )
-                  : ColorScheme.light(
-                      primary: colors.primary,
-                      secondary: colors.success,
-                      surface: colors.backgroundMedium,
-                    ),
-              scaffoldBackgroundColor: colors.backgroundDark,
-              useMaterial3: true,
-              fontFamily: 'Roboto',
-            ),
-            home: const MainMenuScreen(),
-          );
-        },
-      ),
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return Consumer<AppColorProvider>(
+          builder: (context, colors, _) {
+            return MaterialApp(
+              title: 'Stack Tower Pro',
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                brightness: colors.isDark
+                    ? Brightness.dark
+                    : Brightness.light,
+                colorScheme: colors.isDark
+                    ? ColorScheme.dark(
+                        primary: colors.primary,
+                        secondary: colors.success,
+                        surface: colors.backgroundMedium,
+                      )
+                    : ColorScheme.light(
+                        primary: colors.primary,
+                        secondary: colors.success,
+                        surface: colors.backgroundMedium,
+                      ),
+                scaffoldBackgroundColor: colors.backgroundDark,
+                useMaterial3: true,
+                fontFamily: 'Roboto',
+              ),
+              home: const MainMenuScreen(),
+            );
+          },
+        );
+      },
     );
   }
 }
