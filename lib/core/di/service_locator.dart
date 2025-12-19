@@ -5,6 +5,8 @@ import '../../features/stack_tower/services/effects_service.dart';
 import '../../features/stack_tower/services/settings_service.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../../features/leaderboard/services/database_service.dart';
+import '../../features/auth/repositories/auth_repository.dart';
+import '../../features/leaderboard/repositories/leaderboard_repository.dart';
 import '../constants/app_colors.dart';
 
 /// Service Locator for Dependency Injection
@@ -27,6 +29,14 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<SideMenuProvider>(() => SideMenuProvider());
   sl.registerLazySingleton<AuthService>(() => AuthService());
   sl.registerLazySingleton<DatabaseService>(() => DatabaseService());
+
+  // Repositories
+  sl.registerLazySingleton<IAuthRepository>(
+    () => AuthRepository(authService: sl<AuthService>()),
+  );
+  sl.registerLazySingleton<ILeaderboardRepository>(
+    () => LeaderboardRepository(databaseService: sl<DatabaseService>()),
+  );
 
   // Initialize storage service
   await sl<StorageService>().init();

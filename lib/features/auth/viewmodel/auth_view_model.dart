@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+import '../repositories/auth_repository.dart';
 import '../../leaderboard/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthService _authService;
+  final IAuthRepository _authRepository;
   final DatabaseService _databaseService;
 
   User? _user;
@@ -12,11 +12,11 @@ class AuthViewModel extends ChangeNotifier {
   String? _errorMessage;
 
   AuthViewModel({
-    required AuthService authService,
+    required IAuthRepository authRepository,
     required DatabaseService databaseService,
-  }) : _authService = authService,
+  }) : _authRepository = authRepository,
        _databaseService = databaseService {
-    _authService.authStateChanges.listen((user) {
+    _authRepository.authStateChanges.listen((user) {
       _user = user;
       notifyListeners();
     });
@@ -45,7 +45,7 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
-      final credential = await _authService.signUpWithEmail(email, password);
+      final credential = await _authRepository.signUpWithEmail(email, password);
       if (credential != null && credential.user != null) {
         await _databaseService.saveUserProfile(
           uid: credential.user!.uid,
@@ -68,7 +68,7 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
-      await _authService.signInWithEmail(email, password);
+      await _authRepository.signInWithEmail(email, password);
       _setLoading(false);
       return true;
     } catch (e) {
@@ -79,6 +79,6 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await _authService.signOut();
+    await _authRepository.signOut();
   }
 }

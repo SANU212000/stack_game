@@ -14,6 +14,8 @@ import 'features/leaderboard/services/database_service.dart';
 import 'features/auth/viewmodel/auth_view_model.dart';
 import 'features/leaderboard/viewmodel/leaderboard_view_model.dart';
 import 'features/auth/view/splash_screen.dart';
+import 'features/auth/repositories/auth_repository.dart';
+import 'features/leaderboard/repositories/leaderboard_repository.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -44,13 +46,14 @@ void main() async {
       providers: [
         ChangeNotifierProvider(
           create: (_) => AuthViewModel(
-            authService: sl<AuthService>(),
+            authRepository: sl<IAuthRepository>(),
             databaseService: sl<DatabaseService>(),
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) =>
-              LeaderboardViewModel(databaseService: sl<DatabaseService>()),
+          create: (_) => LeaderboardViewModel(
+            leaderboardRepository: sl<ILeaderboardRepository>(),
+          ),
         ),
         ChangeNotifierProvider.value(value: settingsService),
         ChangeNotifierProvider.value(value: sl<AppColorProvider>()),

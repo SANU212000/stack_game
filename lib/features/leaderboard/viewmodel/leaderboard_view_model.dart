@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../services/database_service.dart';
+import '../repositories/leaderboard_repository.dart';
 import '../models/leaderboard_entry.dart';
 
 class LeaderboardViewModel extends ChangeNotifier {
-  final DatabaseService _databaseService;
+  final ILeaderboardRepository _leaderboardRepository;
   StreamSubscription? _subscription;
 
   List<LeaderboardEntry> _entries = [];
@@ -13,8 +13,8 @@ class LeaderboardViewModel extends ChangeNotifier {
 
   final List<String> _months = ['Monthly', 'Weekly', 'All Time'];
 
-  LeaderboardViewModel({required DatabaseService databaseService})
-    : _databaseService = databaseService {
+  LeaderboardViewModel({required ILeaderboardRepository leaderboardRepository})
+    : _leaderboardRepository = leaderboardRepository {
     _initLeaderboard();
   }
 
@@ -41,12 +41,9 @@ class LeaderboardViewModel extends ChangeNotifier {
   }
 
   void _initLeaderboard() {
-    _subscription = _databaseService.getLeaderboardStream().listen(
-      (snapshot) {
-        _entries = [];
-        for (int i = 0; i < snapshot.docs.length; i++) {
-          _entries.add(LeaderboardEntry.fromFirestore(snapshot.docs[i], i + 1));
-        }
+    _subscription = _leaderboardRepository.getLeaderboardStream().listen(
+      (entries) {
+        _entries = entries;
         _isLoading = false;
         notifyListeners();
       },
