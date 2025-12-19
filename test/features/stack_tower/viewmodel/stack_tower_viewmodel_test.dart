@@ -9,6 +9,10 @@ import 'package:slack_game/features/stack_tower/provider/stack_tower_provider.da
 import 'package:slack_game/features/stack_tower/provider/animation_provider.dart';
 import 'package:slack_game/core/constants/app_colors.dart';
 import 'package:slack_game/core/constants/app_constants.dart';
+import 'package:slack_game/features/leaderboard/services/database_service.dart';
+import 'package:slack_game/features/auth/services/auth_service.dart';
+
+import 'package:mocktail/mocktail.dart';
 
 /// Mock Storage Service for testing
 class MockStorageService extends StorageService {
@@ -48,23 +52,37 @@ class _MockTickerProvider extends TickerProvider {
   }
 }
 
+class MockDatabaseService extends Mock implements DatabaseService {}
+
+class MockAuthService extends Mock implements AuthService {}
+
 void main() {
   late StackTowerProvider viewModel;
   late MockStorageService mockStorage;
   late MockSettingsService mockSettings;
   late AnimationProvider animationProvider;
+  late MockDatabaseService mockDatabase;
+  late MockAuthService mockAuth;
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
     mockStorage = MockStorageService();
     mockSettings = MockSettingsService();
+    mockDatabase = MockDatabaseService();
+    mockAuth = MockAuthService();
     animationProvider = AnimationProvider(_MockTickerProvider());
+
+    // Stub default behavior
+    when(() => mockAuth.currentUser).thenReturn(null);
+
     viewModel = StackTowerProvider(
       storageService: mockStorage,
       effectsService: EffectsService(),
       settingsService: mockSettings,
       appColorProvider: AppColorProvider(),
       animationProvider: animationProvider,
+      databaseService: mockDatabase,
+      authService: mockAuth,
     );
   });
 

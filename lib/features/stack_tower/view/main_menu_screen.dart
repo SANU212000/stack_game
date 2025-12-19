@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:slack_game/features/auth/viewmodel/auth_view_model.dart';
+import 'package:slack_game/features/leaderboard/view/leaderboard_screen.dart';
+import 'package:slack_game/features/auth/view/login_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../model/settings_model.dart';
 import '../services/settings_service.dart';
@@ -43,15 +46,16 @@ class _MainMenuScreenState extends State<MainMenuScreen>
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 0.1),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0.0, 0.1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             ),
           );
@@ -71,15 +75,16 @@ class _MainMenuScreenState extends State<MainMenuScreen>
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             ),
           );
@@ -113,9 +118,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   Widget build(BuildContext context) {
     final colors = context.watch<AppColorProvider>();
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: _animationProvider),
-      ],
+      providers: [ChangeNotifierProvider.value(value: _animationProvider)],
       child: Scaffold(
         body: AnimatedStarsBackground(
           child: SafeArea(
@@ -263,7 +266,14 @@ class _MenuContent extends StatelessWidget {
                 icon: Icons.leaderboard,
                 label: 'LEADERBOARD',
                 gradient: [colors.menuOrange, colors.menuOrangeDark],
-                onTap: () => onShowComingSoon('Leaderboard'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LeaderboardScreen(),
+                    ),
+                  );
+                },
               ),
               SizedBox(height: 16.h),
 
@@ -275,6 +285,24 @@ class _MenuContent extends StatelessWidget {
                 gradient: [colors.menuPurple, colors.menuPurpleDark],
                 onTap: onNavigateToSettings,
               ),
+              SizedBox(height: 16.h),
+
+              // Logout
+              _buildAnimatedMenuItem(
+                animation: animationProvider
+                    .menuAnimations[3], // Reusing last animation for now or could add more
+                icon: Icons.logout,
+                label: 'LOGOUT',
+                gradient: [Colors.redAccent, Colors.red],
+                onTap: () async {
+                  await context.read<AuthViewModel>().signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  }
+                },
+              ),
             ],
           ),
         ),
@@ -285,10 +313,7 @@ class _MenuContent extends StatelessWidget {
         Consumer<SettingsService>(
           builder: (context, settings, child) {
             return Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 16.w,
-                vertical: 8.h,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: colors.overlayLight,
                 borderRadius: BorderRadius.circular(20.r),

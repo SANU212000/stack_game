@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
+import '../services/storage_service.dart';
+import '../services/effects_service.dart';
+import '../services/settings_service.dart';
+import '../../leaderboard/services/database_service.dart';
+import '../../auth/services/auth_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../provider/stack_tower_provider.dart';
 import '../provider/animation_provider.dart';
@@ -44,17 +49,21 @@ class _StackTowerScreenState extends State<StackTowerScreen>
 
     // Create stack tower provider with dependencies
     _stackTowerProvider = StackTowerProvider(
-      storageService: context.read(),
-      effectsService: context.read(),
-      settingsService: context.read(),
-      appColorProvider: context.read(),
+      storageService: context.read<StorageService>(),
+      effectsService: context.read<EffectsService>(),
+      settingsService: context.read<SettingsService>(),
+      appColorProvider: context.read<AppColorProvider>(),
       animationProvider: _animationProvider,
+      databaseService: context.read<DatabaseService>(),
+      authService: context.read<AuthService>(),
     );
 
     // Initialize side menu provider with menu controller
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<SideMenuProvider>().init(_animationProvider.menuController);
+        context.read<SideMenuProvider>().init(
+          _animationProvider.menuController,
+        );
       }
     });
   }
@@ -218,9 +227,7 @@ class _GameContent extends StatelessWidget {
                                         if (gameState.isPlaying ||
                                             gameState.isGameOver ||
                                             isPaused)
-                                          LevelBadge(
-                                            level: gameState.level,
-                                          ),
+                                          LevelBadge(level: gameState.level),
                                       ],
                                     ),
                                   ),
@@ -235,12 +242,14 @@ class _GameContent extends StatelessWidget {
                                                 TowerArea(
                                                   placedBlocks: placedBlocks,
                                                   currentBlock: currentBlock,
-                                                  particles: effectsService.particles,
+                                                  particles:
+                                                      effectsService.particles,
                                                   level: gameState.level,
                                                   combo: gameState.combo,
                                                   onTap: () {
                                                     if (!isPaused) {
-                                                      stackTowerProvider.onTap();
+                                                      stackTowerProvider
+                                                          .onTap();
                                                     }
                                                   },
                                                 ),
@@ -249,24 +258,32 @@ class _GameContent extends StatelessWidget {
                                                 if (isPaused)
                                                   Center(
                                                     child: Container(
-                                                      padding: EdgeInsets.symmetric(
-                                                        horizontal: 24.w,
-                                                        vertical: 12.h,
-                                                      ),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 24.w,
+                                                            vertical: 12.h,
+                                                          ),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.black.withAlpha(150),
-                                                        borderRadius: BorderRadius.circular(20.r),
+                                                        color: Colors.black
+                                                            .withAlpha(150),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              20.r,
+                                                            ),
                                                         border: Border.all(
-                                                          color: colors.accent.withAlpha(100),
+                                                          color: colors.accent
+                                                              .withAlpha(100),
                                                           width: 2.w,
                                                         ),
                                                       ),
                                                       child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           Icon(
                                                             Icons.pause,
-                                                            color: colors.accent,
+                                                            color:
+                                                                colors.accent,
                                                             size: 32.sp,
                                                           ),
                                                           SizedBox(width: 12.w),
@@ -274,9 +291,13 @@ class _GameContent extends StatelessWidget {
                                                             'PAUSED',
                                                             style: TextStyle(
                                                               fontSize: 24.sp,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                              letterSpacing: 4.w,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white,
+                                                              letterSpacing:
+                                                                  4.w,
                                                             ),
                                                           ),
                                                         ],
@@ -301,11 +322,13 @@ class _GameContent extends StatelessWidget {
                             ),
 
                             // Combo display (Overlay)
-                            if ((gameState.isPlaying || gameState.isGameOver) && !isPaused)
+                            if ((gameState.isPlaying || gameState.isGameOver) &&
+                                !isPaused)
                               ComboDisplay(
                                 combo: gameState.combo,
                                 showPerfect: effectsService.showPerfectText,
-                                perfectOpacity: effectsService.perfectTextOpacity,
+                                perfectOpacity:
+                                    effectsService.perfectTextOpacity,
                                 perfectScale: effectsService.perfectTextScale,
                               ),
 
@@ -319,7 +342,8 @@ class _GameContent extends StatelessWidget {
                                   maxCombo: gameState.maxCombo,
                                   perfectLandings: gameState.perfectLandings,
                                   level: gameState.level,
-                                  onRestart: () => stackTowerProvider.restartGame(),
+                                  onRestart: () =>
+                                      stackTowerProvider.restartGame(),
                                 ),
                               ),
                           ],

@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/di/service_locator.dart';
 import 'core/constants/app_colors.dart';
-import 'features/stack_tower/view/main_menu_screen.dart';
+import 'features/stack_tower/provider/side_menu_provider.dart';
 import 'features/stack_tower/services/settings_service.dart';
 import 'features/stack_tower/services/storage_service.dart';
 import 'features/stack_tower/services/effects_service.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'features/auth/services/auth_service.dart';
+import 'features/leaderboard/services/database_service.dart';
+import 'features/auth/viewmodel/auth_view_model.dart';
+import 'features/leaderboard/viewmodel/leaderboard_view_model.dart';
+import 'features/auth/view/splash_screen.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Provider.debugCheckInvalidValueType = null;
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Set system UI to match dark theme
   SystemChrome.setSystemUIOverlayStyle(
@@ -33,12 +42,24 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(
+            authService: sl<AuthService>(),
+            databaseService: sl<DatabaseService>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              LeaderboardViewModel(databaseService: sl<DatabaseService>()),
+        ),
         ChangeNotifierProvider.value(value: settingsService),
         ChangeNotifierProvider.value(value: sl<AppColorProvider>()),
         ChangeNotifierProvider.value(value: sl<SideMenuProvider>()),
         // Core services for StackTower (ViewModel will be created at screen level due to TickerProvider requirement)
         Provider.value(value: storageService),
         Provider.value(value: effectsService),
+        Provider.value(value: sl<DatabaseService>()),
+        Provider.value(value: sl<AuthService>()),
       ],
       child: StackTowerApp(settingsService: settingsService),
     ),
@@ -64,9 +85,7 @@ class StackTowerApp extends StatelessWidget {
               title: 'Stack Tower Pro',
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                brightness: colors.isDark
-                    ? Brightness.dark
-                    : Brightness.light,
+                brightness: colors.isDark ? Brightness.dark : Brightness.light,
                 colorScheme: colors.isDark
                     ? ColorScheme.dark(
                         primary: colors.primary,
@@ -82,7 +101,7 @@ class StackTowerApp extends StatelessWidget {
                 useMaterial3: true,
                 fontFamily: 'Roboto',
               ),
-              home: const MainMenuScreen(),
+              home: const SplashScreen(),
             );
           },
         );

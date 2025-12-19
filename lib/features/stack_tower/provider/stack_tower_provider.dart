@@ -7,6 +7,8 @@ import '../model/animation_model.dart';
 import '../services/storage_service.dart';
 import '../services/effects_service.dart';
 import '../services/settings_service.dart';
+import '../../leaderboard/services/database_service.dart';
+import '../../auth/services/auth_service.dart';
 import '../../../core/constants/app_colors.dart';
 import 'animation_provider.dart';
 
@@ -27,6 +29,8 @@ class StackTowerProvider extends ChangeNotifier {
   final SettingsService _settingsService;
   final AppColorProvider _appColorProvider;
   final AnimationProvider _animationProvider;
+  final DatabaseService _databaseService;
+  final AuthService _authService;
 
   // Game State
   GameStateModel _gameState = const GameStateModel();
@@ -59,11 +63,15 @@ class StackTowerProvider extends ChangeNotifier {
     required SettingsService settingsService,
     required AppColorProvider appColorProvider,
     required AnimationProvider animationProvider,
+    required DatabaseService databaseService,
+    required AuthService authService,
   }) : _storageService = storageService,
        _effectsService = effectsService,
        _settingsService = settingsService,
        _appColorProvider = appColorProvider,
-       _animationProvider = animationProvider {
+       _animationProvider = animationProvider,
+       _databaseService = databaseService,
+       _authService = authService {
     initializeGame();
     _startParticleUpdater();
   }
@@ -416,6 +424,13 @@ class StackTowerProvider extends ChangeNotifier {
       isMoving: false,
     );
     _animationModel = _animationModel.copyWith(isAnimating: false);
+
+    // Sync score with Firestore if logged in
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      await _databaseService.updateHighScore(currentUser.uid, _gameState.score);
+    }
+
     notifyListeners();
   }
 

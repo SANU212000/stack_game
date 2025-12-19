@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "385141491666",
+    "project_id": "slack-game-dev-001-6a103",
+    "storage_bucket": "slack-game-dev-001-6a103.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385141491666:android:93ec50587ffac224726a0b",
+        "android_client_info": {
+          "package_name": "com.example.slack_game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMiYP0RCmWpf3IE92yH2_3q48z1aUyrrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

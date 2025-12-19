@@ -3,6 +3,8 @@ import 'package:slack_game/features/stack_tower/provider/side_menu_provider.dart
 import '../../features/stack_tower/services/storage_service.dart';
 import '../../features/stack_tower/services/effects_service.dart';
 import '../../features/stack_tower/services/settings_service.dart';
+import '../../features/auth/services/auth_service.dart';
+import '../../features/leaderboard/services/database_service.dart';
 import '../constants/app_colors.dart';
 
 /// Service Locator for Dependency Injection
@@ -23,6 +25,8 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton<SettingsService>(() => SettingsService());
   sl.registerLazySingleton<AppColorProvider>(() => AppColorProvider());
   sl.registerLazySingleton<SideMenuProvider>(() => SideMenuProvider());
+  sl.registerLazySingleton<AuthService>(() => AuthService());
+  sl.registerLazySingleton<DatabaseService>(() => DatabaseService());
 
   // Initialize storage service
   await sl<StorageService>().init();
